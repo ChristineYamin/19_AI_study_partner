@@ -1,0 +1,50 @@
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables and API keys
+.env
+.env.*
+!.env.example
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# Uploaded documents
+uploads/
+data/uploads/
+*.pdf
+
+# Generated vector databases and model files
+vector_store/
+chroma_db/
+faiss_index/
+models/
+*.faiss
+*.index
+*.pkl
+
+# Testing and tool caches
+.pytest_cache/
+.mypy_cache/
+.cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# VS Code and PyCharm
+.vscode/
+.idea/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
