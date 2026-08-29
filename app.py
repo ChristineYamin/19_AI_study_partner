@@ -5,7 +5,8 @@ from rag_pipeline import (
     create_text_chunks,
     load_embedding_model,
     create_vector_index,
-    retrieve_relevant_chunks
+    retrieve_relevant_chunks,
+    generate_grounded_answer
 )
 
 @st.cache_data(
@@ -159,6 +160,24 @@ else:
                 vector_index=vector_index,
                 top_k=5
             )
+
+            try:
+                with st.spinner(
+                    "Generating a grounded answer..."
+                ):
+                    answer = generate_grounded_answer(
+                        question=question,
+                        retrieved_chunks=retrieved_chunks
+                    )
+
+                st.subheader("AI Answer")
+                st.markdown(answer)
+
+            except Exception as error:
+                st.error(
+                    f"Answer generation failed: {error}"
+                )
+                
 
             st.write(
                 f"Found {len(retrieved_chunks)} "

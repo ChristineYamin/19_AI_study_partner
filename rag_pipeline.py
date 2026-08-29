@@ -231,7 +231,7 @@ Document context:
     )
 
     response = client.chat.completions.create(
-        model="Qwen/Qwen2.5-7B-Instruct",
+        model="openai/gpt-oss-20b",
         messages=[
             {
                 "role": "system",
