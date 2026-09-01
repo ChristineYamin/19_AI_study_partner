@@ -140,352 +140,364 @@ else:
 
             st.write(first_page["text"][:2000])
 
-        st.divider()
-
-        st.subheader("Search Your Study Materials")
-
-        question = st.text_input(
-            "Ask a question about your documents"
+        ask_tab, summary_tab, quiz_tab, flashcard_tab = st.tabs(
+            [
+                "💬 Ask",
+                "📝 Summary",
+                "🧠 Quiz",
+                "🗂️ Flashcards"
+            ]
         )
 
-        search_button = st.button(
-            "Find Relevant Information",
-            type="primary",
-            disabled=not question.strip()
-        )
+        with ask_tab:
 
-        if search_button:
+            st.divider()
 
-            retrieved_chunks = retrieve_relevant_chunks(
-                question=question,
-                text_chunks=text_chunks,
-                embedding_model=embedding_model,
-                vector_index=vector_index,
-                top_k=5
-            )
+            st.subheader("Search Your Study Materials")
 
-            show_sources = False
-            
+            question = st.text_input(
+                    "Ask a question about your documents"
+                )
 
-            try:
-                with st.spinner(
-                    "Generating a grounded answer..."
-                ):
-                    answer = generate_grounded_answer(
+            search_button = st.button(
+                    "Find Relevant Information",
+                    type="primary",
+                    disabled=not question.strip()
+                )
+
+            if search_button:
+
+                    retrieved_chunks = retrieve_relevant_chunks(
                         question=question,
-                        retrieved_chunks=retrieved_chunks
+                        text_chunks=text_chunks,
+                        embedding_model=embedding_model,
+                        vector_index=vector_index,
+                        top_k=5
                     )
 
-                st.subheader("AI Answer")
-                st.markdown(answer)
-                normalized_answer = answer.lower().replace(
-                    "’",
-                    "'"
-                )
-                show_sources = (
-                    "could not find" not in normalized_answer
-                    and "couldn't find" not in normalized_answer
-                )
+                    show_sources = False
+                    
 
-            except Exception as error:
-                st.error(
-                    f"Answer generation failed: {error}"
-                )
+                    try:
+                        with st.spinner(
+                            "Generating a grounded answer..."
+                        ):
+                            answer = generate_grounded_answer(
+                                question=question,
+                                retrieved_chunks=retrieved_chunks
+                            )
 
-            if show_sources:
-                st.write(
-                    f"Found {len(retrieved_chunks)} "
-                    f"relevant sections:"
-            )
-
-                for result_number, result in enumerate(
-                    retrieved_chunks,
-                    start=1
-                ):
-
-                    with st.expander(
-                        f"Result {result_number} — "
-                        f"{result['source']}, "
-                        f"page {result['page']}"
-                    ):
-
-                        st.caption(
-                            f"Similarity score: "
-                            f"{result['similarity_score']:.3f}"
+                        st.subheader("AI Answer")
+                        st.markdown(answer)
+                        normalized_answer = answer.lower().replace(
+                            "’",
+                            "'"
+                        )
+                        show_sources = (
+                            "could not find" not in normalized_answer
+                            and "couldn't find" not in normalized_answer
                         )
 
-                        st.write(result["text"])
+                    except Exception as error:
+                        st.error(
+                            f"Answer generation failed: {error}"
+                        )
 
-        st.divider()
-        st.subheader("Create a Topic Summary")
-
-        summary_topic = st.text_input(
-            "Enter a topic to summarize",
-            placeholder="Example: Stacks",
-            key="summary_topic"
-        )
-
-        summary_button = st.button(
-            "Generate Summary",
-            disabled=not summary_topic.strip()
-        )
-
-        if summary_button:
-            summary_chunks = retrieve_relevant_chunks(
-                question=summary_topic,
-                text_chunks=text_chunks,
-                embedding_model=embedding_model,
-                vector_index=vector_index,
-                top_k=8
-            )
-
-            try:
-                with st.spinner(
-                    "Creating your study summary..."
-                ):
-                    summary = generate_topic_summary(
-                        topic=summary_topic,
-                        retrieved_chunks=summary_chunks
+                    if show_sources:
+                        st.write(
+                            f"Found {len(retrieved_chunks)} "
+                            f"relevant sections:"
                     )
 
-                st.subheader(
-                    f"Summary: {summary_topic}"
-                )
-                st.markdown(summary)
+                        for result_number, result in enumerate(
+                            retrieved_chunks,
+                            start=1
+                        ):
 
-                normalized_summary = (
-                    summary.lower().replace("’", "'")
-                )
+                            with st.expander(
+                                f"Result {result_number} — "
+                                f"{result['source']}, "
+                                f"page {result['page']}"
+                            ):
 
-                summary_has_sources = (
-                    "could not find" not in normalized_summary
-                    and "couldn't find" not in normalized_summary
-                )
-
-                if summary_has_sources:
-                    st.markdown("#### Source Pages")
-                    displayed_sources = set()
-
-                    for chunk in summary_chunks:
-                        source_key = (
-                            chunk["source"],
-                            chunk["page"]
-                        )
-
-                        if source_key not in displayed_sources:
-                            st.markdown(
-                                f"- **{chunk['source']}** — "
-                                f"Page {chunk['page']}"
-                            )
-
-                            displayed_sources.add(
-                                source_key
-                            )
-            except Exception as error:
-                st.error(
-                    f"Summary generation failed: {error}"
+                                st.caption(
+                                    f"Similarity score: "
+                                    f"{result['similarity_score']:.3f}"
                                 )
 
+                                st.write(result["text"])
+        with summary_tab:
+            st.divider()
+            st.subheader("Create a Topic Summary")
 
-        st.divider()
-        st.subheader("Test Your knowledge")
-        quiz_topic = st.text_input(
-            "Enter a quiz topic",
-            placeholder="Example: Stacks",
-            key="quiz_topic"
-        )
-
-        generate_quiz_button = st.button(
-            "Generate Quiz",
-            disabled=not quiz_topic.strip()
-        )
-
-        if generate_quiz_button:
-            quiz_chunks = retrieve_relevant_chunks(
-                question=quiz_topic,
-                text_chunks=text_chunks,
-                embedding_model=embedding_model,
-                vector_index=vector_index,
-                top_k=10
+            summary_topic = st.text_input(
+                "Enter a topic to summarize",
+                placeholder="Example: Stacks",
+                key="summary_topic"
             )
 
-            try:
-                with st.spinner(
-                    "Creating your quiz.."
-                ):
-                    quiz_questions = generate_topic_quiz(
-                        topic=quiz_topic,
-                        retrieved_chunks=quiz_chunks,
-                        question_count=5
-                    )
+            summary_button = st.button(
+                "Generate Summary",
+                disabled=not summary_topic.strip()
+            )
 
-                for session_key in list(
-                    st.session_state.keys()
-                ):
-                    if session_key.startswith(
-                        "quiz_answer_"
-                    ):
-                        del st.session_state[
-                            session_key
-                        ]
-                st.session_state[
-                    "quiz_questions"
-                ] = quiz_questions
-
-            except Exception as error:
-                st.error(
-                    f"Quiz generation failed: {error}"
+            if summary_button:
+                summary_chunks = retrieve_relevant_chunks(
+                    question=summary_topic,
+                    text_chunks=text_chunks,
+                    embedding_model=embedding_model,
+                    vector_index=vector_index,
+                    top_k=8
                 )
-        if "quiz_questions" in st.session_state:
-            quiz_questions = st.session_state[
-                "quiz_questions"
-            ]
 
-            selected_answers = []
-
-            with st.form("quiz_form"):
-                for question_number, quiz_item in enumerate(
-                    quiz_questions,
-                    start=1
-                ):
-                    selected_answer = st.radio(
-                        (f"{question_number}. "
-                        f"{quiz_item['question']}"
-                    ),
-                    quiz_item["options"],
-                    index=None,
-                    key=(
-                        f"quiz_answer_"
-                        f"{question_number}"
-                    )
-                    )
-                    selected_answers.append(
-                        selected_answer
-                    )
-                submit_quiz = st.form_submit_button(
-                    "Submit Quiz"
-                )
-            if submit_quiz:
-                if None in selected_answers:
-                    st.warning(
-                        "Please answer every question."
-                    )
-                else:
-                    score = 0
-                    for selected_answer, quiz_item in zip(
-                        selected_answers,
-                        quiz_questions
+                try:
+                    with st.spinner(
+                        "Creating your study summary..."
                     ):
-                        correct_option = quiz_item[
-                            "options"
-                        ][
-                            quiz_item[
-                                "correct_answer"
-                            ]
-                        ]
-
-                        if selected_answer == correct_option:
-                            score += 1
-                    st.success(
-                        f"Your Score: {score}/"
-                        f"{len(quiz_questions)}"
-                    )
-
-                    for question_number, (
-                        selected_answer,
-                        quiz_item
-                    ) in enumerate(
-                        zip(
-                            selected_answers,
-                            quiz_questions
-                        ),
-                        start=1
-                    ):
-                        correct_option = quiz_item[
-                            "options"
-                        ][
-                            quiz_item[
-                                "correct_answer"
-                            ]
-                        ]
-
-                        if selected_answer == correct_option:
-                            st.success(
-                                f"Question {question_number}: "
-                                f"Correct"
-                            )
-                        else:
-                            st.error(
-                                f"Question {question_number}: "
-                                f"Correct answer - "
-                                f"{correct_option}"
-                            )
-
-                        st.write(
-                            quiz_item["explanation"]
+                        summary = generate_topic_summary(
+                            topic=summary_topic,
+                            retrieved_chunks=summary_chunks
                         )
 
-        st.divider()
-        st.subheader("Create Flashcards")
+                    st.subheader(
+                        f"Summary: {summary_topic}"
+                    )
+                    st.markdown(summary)
 
-        flashcard_topic = st.text_input(
-            "Enter a flashcard topic",
-            placeholder="Example: Stacks",
-            key="flashcard_topic"
-        )
+                    normalized_summary = (
+                        summary.lower().replace("’", "'")
+                    )
 
-        generate_flashcards_button = st.button(
-            "Generate Flashcards",
-            disabled=not flashcard_topic.strip()
-        )
+                    summary_has_sources = (
+                        "could not find" not in normalized_summary
+                        and "couldn't find" not in normalized_summary
+                    )
 
-        if generate_flashcards_button:
-            flashcard_chunks = retrieve_relevant_chunks(
-                question=flashcard_topic,
-                text_chunks=text_chunks,
-                embedding_model=embedding_model,
-                vector_index=vector_index,
-                top_k=10
+                    if summary_has_sources:
+                        st.markdown("#### Source Pages")
+                        displayed_sources = set()
+
+                        for chunk in summary_chunks:
+                            source_key = (
+                                chunk["source"],
+                                chunk["page"]
+                            )
+
+                            if source_key not in displayed_sources:
+                                st.markdown(
+                                    f"- **{chunk['source']}** — "
+                                    f"Page {chunk['page']}"
+                                )
+
+                                displayed_sources.add(
+                                    source_key
+                                )
+                except Exception as error:
+                    st.error(
+                        f"Summary generation failed: {error}"
+                                    )
+
+        with quiz_tab:
+            st.divider()
+            st.subheader("Test Your knowledge")
+            quiz_topic = st.text_input(
+                "Enter a quiz topic",
+                placeholder="Example: Stacks",
+                key="quiz_topic"
             )
 
-            try:
-                with st.spinner(
-                    "Creating your flashcards..."
-                ):
-                    flashcards = generate_topic_flashcards(
-                        topic=flashcard_topic,
-                        retrieved_chunks=flashcard_chunks,
-                        card_count=8
-                    )
-                st.session_state[
-                    "flashcards"
-                ] = flashcards
+            generate_quiz_button = st.button(
+                "Generate Quiz",
+                disabled=not quiz_topic.strip()
+            )
 
-            except Exception as error:
-                st.error(
-                    f"Flashcard generation failed: {error}"
+            if generate_quiz_button:
+                quiz_chunks = retrieve_relevant_chunks(
+                    question=quiz_topic,
+                    text_chunks=text_chunks,
+                    embedding_model=embedding_model,
+                    vector_index=vector_index,
+                    top_k=10
                 )
-        if "flashcards" in st.session_state:
-            flashcards = st.session_state[
-                "flashcards"
-            ]
 
-            st.caption(
-                "Open a card to reveal its answer."
+                try:
+                    with st.spinner(
+                        "Creating your quiz.."
+                    ):
+                        quiz_questions = generate_topic_quiz(
+                            topic=quiz_topic,
+                            retrieved_chunks=quiz_chunks,
+                            question_count=5
+                        )
+
+                    for session_key in list(
+                        st.session_state.keys()
+                    ):
+                        if session_key.startswith(
+                            "quiz_answer_"
+                        ):
+                            del st.session_state[
+                                session_key
+                            ]
+                    st.session_state[
+                        "quiz_questions"
+                    ] = quiz_questions
+
+                except Exception as error:
+                    st.error(
+                        f"Quiz generation failed: {error}"
+                    )
+            if "quiz_questions" in st.session_state:
+                quiz_questions = st.session_state[
+                    "quiz_questions"
+                ]
+
+                selected_answers = []
+
+                with st.form("quiz_form"):
+                    for question_number, quiz_item in enumerate(
+                        quiz_questions,
+                        start=1
+                    ):
+                        selected_answer = st.radio(
+                            (f"{question_number}. "
+                            f"{quiz_item['question']}"
+                        ),
+                        quiz_item["options"],
+                        index=None,
+                        key=(
+                            f"quiz_answer_"
+                            f"{question_number}"
+                        )
+                        )
+                        selected_answers.append(
+                            selected_answer
+                        )
+                    submit_quiz = st.form_submit_button(
+                        "Submit Quiz"
+                    )
+                if submit_quiz:
+                    if None in selected_answers:
+                        st.warning(
+                            "Please answer every question."
+                        )
+                    else:
+                        score = 0
+                        for selected_answer, quiz_item in zip(
+                            selected_answers,
+                            quiz_questions
+                        ):
+                            correct_option = quiz_item[
+                                "options"
+                            ][
+                                quiz_item[
+                                    "correct_answer"
+                                ]
+                            ]
+
+                            if selected_answer == correct_option:
+                                score += 1
+                        st.success(
+                            f"Your Score: {score}/"
+                            f"{len(quiz_questions)}"
+                        )
+
+                        for question_number, (
+                            selected_answer,
+                            quiz_item
+                        ) in enumerate(
+                            zip(
+                                selected_answers,
+                                quiz_questions
+                            ),
+                            start=1
+                        ):
+                            correct_option = quiz_item[
+                                "options"
+                            ][
+                                quiz_item[
+                                    "correct_answer"
+                                ]
+                            ]
+
+                            if selected_answer == correct_option:
+                                st.success(
+                                    f"Question {question_number}: "
+                                    f"Correct"
+                                )
+                            else:
+                                st.error(
+                                    f"Question {question_number}: "
+                                    f"Correct answer - "
+                                    f"{correct_option}"
+                                )
+
+                            st.write(
+                                quiz_item["explanation"]
+                            )
+        with flashcard_tab:
+
+            st.divider()
+            st.subheader("Create Flashcards")
+
+            flashcard_topic = st.text_input(
+                "Enter a flashcard topic",
+                placeholder="Example: Stacks",
+                key="flashcard_topic"
             )
 
-            for card_number, flashcard in enumerate(
-                flashcards,
-                start=1
-            ):
-                with st.expander(
-                    f"Card {card_number}: "
-                    f"{flashcard['front']}"
-                ):
-                    st.markdown(
-                        f"**Answer:** "
-                        f"{flashcard['back']}"
+            generate_flashcards_button = st.button(
+                "Generate Flashcards",
+                disabled=not flashcard_topic.strip()
+            )
+
+            if generate_flashcards_button:
+                flashcard_chunks = retrieve_relevant_chunks(
+                    question=flashcard_topic,
+                    text_chunks=text_chunks,
+                    embedding_model=embedding_model,
+                    vector_index=vector_index,
+                    top_k=10
+                )
+
+                try:
+                    with st.spinner(
+                        "Creating your flashcards..."
+                    ):
+                        flashcards = generate_topic_flashcards(
+                            topic=flashcard_topic,
+                            retrieved_chunks=flashcard_chunks,
+                            card_count=8
+                        )
+                    st.session_state[
+                        "flashcards"
+                    ] = flashcards
+
+                except Exception as error:
+                    st.error(
+                        f"Flashcard generation failed: {error}"
                     )
+            if "flashcards" in st.session_state:
+                flashcards = st.session_state[
+                    "flashcards"
+                ]
+
+                st.caption(
+                    "Open a card to reveal its answer."
+                )
+
+                for card_number, flashcard in enumerate(
+                    flashcards,
+                    start=1
+                ):
+                    with st.expander(
+                        f"Card {card_number}: "
+                        f"{flashcard['front']}"
+                    ):
+                        st.markdown(
+                            f"**Answer:** "
+                            f"{flashcard['back']}"
+                        )
             
     else:
 

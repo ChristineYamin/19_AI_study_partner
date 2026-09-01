@@ -1,0 +1,9 @@
+streamlit
+pypdf
+sentence-transformers
+faiss-cpu
+numpy
+huggingface-hub
+python-dontenv
+torch
+torchvision
