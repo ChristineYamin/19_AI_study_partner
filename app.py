@@ -8,7 +8,8 @@ from rag_pipeline import (
     retrieve_relevant_chunks,
     generate_grounded_answer,
     generate_topic_summary,
-    generate_topic_quiz
+    generate_topic_quiz,
+    generate_topic_flashcards
 )
 
 @st.cache_data(
@@ -343,23 +344,23 @@ else:
             selected_answers = []
 
             with st.form("quiz_form"):
-                for question_nummber, quiz_item in enumerate(
+                for question_number, quiz_item in enumerate(
                     quiz_questions,
                     start=1
                 ):
-                    selected_answers = st.radio(
-                        (f"{question_nummber}."
-                        f"{quiz_item["question"]}"
+                    selected_answer = st.radio(
+                        (f"{question_number}. "
+                        f"{quiz_item['question']}"
                     ),
                     quiz_item["options"],
                     index=None,
                     key=(
                         f"quiz_answer_"
-                        f"{question_nummber}"
+                        f"{question_number}"
                     )
                     )
                     selected_answers.append(
-                        selected_answers
+                        selected_answer
                     )
                 submit_quiz = st.form_submit_button(
                     "Submit Quiz"
@@ -376,14 +377,14 @@ else:
                         quiz_questions
                     ):
                         correct_option = quiz_item[
-                            "option"
+                            "options"
                         ][
                             quiz_item[
                                 "correct_answer"
                             ]
                         ]
 
-                        if selected_answers == correct_option:
+                        if selected_answer == correct_option:
                             score += 1
                     st.success(
                         f"Your Score: {score}/"
@@ -391,7 +392,7 @@ else:
                     )
 
                     for question_number, (
-                        selected_answers,
+                        selected_answer,
                         quiz_item
                     ) in enumerate(
                         zip(
@@ -408,14 +409,14 @@ else:
                             ]
                         ]
 
-                        if selected_answers == correct_option:
+                        if selected_answer == correct_option:
                             st.success(
-                                f"Question {question_nummber}: "
+                                f"Question {question_number}: "
                                 f"Correct"
                             )
                         else:
                             st.error(
-                                f"Question {question_nummber}: "
+                                f"Question {question_number}: "
                                 f"Correct answer - "
                                 f"{correct_option}"
                             )
@@ -423,10 +424,69 @@ else:
                         st.write(
                             quiz_item["explanation"]
                         )
+
+        st.divider()
+        st.subheader("Create Flashcards")
+
+        flashcard_topic = st.text_input(
+            "Enter a flashcard topic",
+            placeholder="Example: Stacks",
+            key="flashcard_topic"
+        )
+
+        generate_flashcards_button = st.button(
+            "Generate Flashcards",
+            disabled=not flashcard_topic.strip()
+        )
+
+        if generate_flashcards_button:
+            flashcard_chunks = retrieve_relevant_chunks(
+                question=flashcard_topic,
+                text_chunks=text_chunks,
+                embedding_model=embedding_model,
+                vector_index=vector_index,
+                top_k=10
+            )
+
+            try:
+                with st.spinner(
+                    "Creating your flashcards..."
+                ):
+                    flashcards = generate_topic_flashcards(
+                        topic=flashcard_topic,
+                        retrieved_chunks=flashcard_chunks,
+                        card_count=8
+                    )
+                st.session_state[
+                    "flashcards"
+                ] = flashcards
+
+            except Exception as error:
+                st.error(
+                    f"Flashcard generation failed: {error}"
+                )
+        if "flashcards" in st.session_state:
+            flashcards = st.session_state[
+                "flashcards"
+            ]
+
+            st.caption(
+                "Open a card to reveal its answer."
+            )
+
+            for card_number, flashcard in enumerate(
+                flashcards,
+                start=1
+            ):
+                with st.expander(
+                    f"Card {card_number}: "
+                    f"{flashcard['front']}"
+                ):
+                    st.markdown(
+                        f"**Answer:** "
+                        f"{flashcard['back']}"
+                    )
             
-
-
-
     else:
 
         st.error(

@@ -444,3 +444,113 @@ Document context:
     )
 
     return quiz_data["questions"]
+
+def generate_topic_flashcards(
+    topic,
+    retrieved_chunks,
+    card_count=8
+):
+
+    hf_token = os.getenv("HF_TOKEN")
+
+    if not hf_token:
+
+        raise ValueError(
+            "Hugging Face token was not found."
+        )
+
+    context_sections = []
+
+    for result_number, chunk in enumerate(
+        retrieved_chunks,
+        start=1
+    ):
+
+        context_sections.append(
+            f"[Source {result_number}: "
+            f"{chunk['source']}, "
+            f"page {chunk['page']}]\n"
+            f"{chunk['text']}"
+        )
+
+    context = "\n\n".join(context_sections)
+
+    client = InferenceClient(
+        provider="auto",
+        token=hf_token
+    )
+
+    response = client.chat.completions.create(
+        model="openai/gpt-oss-20b",
+        messages=[
+            {
+                "role": "system",
+                "content": """
+You are an AI Study Partner.
+
+Create study flashcards using only the supplied
+document context.
+
+Rules:
+1. Do not use outside knowledge.
+2. Each front must contain one clear question,
+   term, or concept.
+3. Each back must contain a concise explanation.
+4. Avoid duplicate flashcards.
+5. Make every card useful for revision.
+"""
+            },
+            {
+                "role": "user",
+                "content": f"""
+Topic: {topic}
+
+Number of flashcards: {card_count}
+
+Document context:
+{context}
+"""
+            }
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "study_flashcards",
+                "strict": True,
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "flashcards": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "front": {
+                                        "type": "string"
+                                    },
+                                    "back": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "front",
+                                    "back"
+                                ],
+                                "additionalProperties": False
+                            }
+                        }
+                    },
+                    "required": ["flashcards"],
+                    "additionalProperties": False
+                }
+            }
+        },
+        max_tokens=1400,
+        temperature=0.2
+    )
+
+    flashcard_data = json.loads(
+        response.choices[0].message.content
+    )
+
+    return flashcard_data["flashcards"]
