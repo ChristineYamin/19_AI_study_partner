@@ -5,11 +5,40 @@ from sentence_transformers import SentenceTransformer
 
 import os
 import json
+from functools import wraps
 
 from dotenv import load_dotenv
 from huggingface_hub import InferenceClient
 
 load_dotenv()
+
+
+def retry_on_failure(max_attempts=2):
+
+    def decorator(function):
+
+        @wraps(function)
+        def wrapper(*args, **kwargs):
+
+            last_error = None
+
+            for attempt in range(max_attempts):
+
+                try:
+
+                    return function(*args, **kwargs)
+
+                except Exception as error:
+
+                    last_error = error
+
+            raise RuntimeError(
+                f"Request failed after {max_attempts} attempts."
+            ) from last_error
+
+        return wrapper
+
+    return decorator
 
 def extract_pdf_pages(uploaded_files):
 
@@ -322,6 +351,7 @@ Document context:
     return response.choices[0].message.content.strip()
 
 
+@retry_on_failure(max_attempts=2)
 def generate_topic_quiz(
     topic,
     retrieved_chunks,

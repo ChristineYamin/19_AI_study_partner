@@ -57,6 +57,191 @@ st.set_page_config(
     layout="wide"
 )
 
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background:
+            radial-gradient(
+                circle at top right,
+                #FFE4C7 0%,
+                #FFF7ED 35%,
+                #FDFCFB 75%
+            );
+        color: #292524;
+    }
+
+    [data-testid="stHeader"] {
+        background-color: transparent;
+    }
+
+    .block-container {
+        max-width: 1200px;
+        padding-top: 2rem;
+        padding-bottom: 3rem;
+    }
+
+    .stApp h1,
+    .stApp h2,
+    .stApp h3 {
+        color: #292524;
+    }
+
+    .stApp p,
+    .stApp label {
+        color: #57534E;
+    }
+
+    [data-testid="stFileUploader"] section {
+        background-color: rgba(255, 255, 255, 0.85);
+        border: 2px dashed #D97706;
+        border-radius: 16px;
+        padding: 1rem;
+    }
+
+    [data-testid="stFileUploader"] button {
+        background-color: #FFF7ED;
+        color: #9A3412;
+        border: 1px solid #FDBA74;
+        border-radius: 10px;
+    }
+
+    [data-testid="stFileUploader"] small {
+        color: #78716C;
+    }
+
+    [data-testid="stMetricLabel"],
+    [data-testid="stMetricValue"] {
+        color: #292524;
+    }
+
+    .stButton > button {
+    min-height: 46px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.stButton > button[kind="secondary"] p {
+    color: #7C2D12 !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+}
+
+.stButton > button[kind="primary"] p {
+    color: #FFFFFF !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+}
+
+div[class*="st-key-nav_"] button {
+    min-height: 62px !important;
+}
+
+div[class*="st-key-nav_"] button p {
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+}
+
+.stButton > button[kind="secondary"] {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #57534E;
+    border: 1px solid #FED7AA;
+    box-shadow: 0 4px 12px rgba(124, 45, 18, 0.07);
+}
+
+.stButton > button[kind="secondary"]:hover {
+    color: #C2410C;
+    border-color: #F97316;
+    transform: translateY(-2px);
+    box-shadow: 0 7px 18px rgba(194, 65, 12, 0.12);
+}
+
+.stButton > button[kind="primary"] {
+    color: white;
+    background: linear-gradient(
+        135deg,
+        #EA580C,
+        #F59E0B
+    );
+    border: none;
+    box-shadow: 0 6px 16px rgba(234, 88, 12, 0.22);
+}
+
+.document-ready {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin: 1.25rem 0;
+    padding: 1rem 1.2rem;
+    background-color: rgba(255, 255, 255, 0.88);
+    border: 1px solid #BBF7D0;
+    border-left: 5px solid #22C55E;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.07);
+}
+
+.ready-icon {
+    font-size: 1.4rem;
+}
+
+.ready-title {
+    color: #166534;
+    font-weight: 700;
+}
+
+.ready-details {
+    color: #57534E;
+    font-size: 0.9rem;
+}
+
+[data-testid="stMetric"] {
+    background-color: rgba(255, 255, 255, 0.88);
+    border: 1px solid #FED7AA;
+    border-radius: 14px;
+    padding: 1rem 1.2rem;
+    box-shadow: 0 4px 12px rgba(124, 45, 18, 0.06);
+}
+
+[data-testid="stMetricLabel"] {
+    color: #78716C !important;
+    font-weight: 600;
+}
+
+[data-testid="stMetricValue"] {
+    color: #9A3412 !important;
+    font-weight: 700;
+}
+
+[data-testid="stTextInput"] input {
+    background-color: rgba(255, 255, 255, 0.92);
+    color: #292524;
+    border: 1px solid #FED7AA;
+    border-radius: 12px;
+}
+
+[data-testid="stTextInput"] input:focus {
+    border-color: #F97316;
+    box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.15);
+}
+
+[data-testid="stTextInput"] input::placeholder {
+    color: #A8A29E;
+}
+
+[data-testid="stExpander"] {
+    background-color: rgba(255, 255, 255, 0.82);
+    border: 1px solid #FED7AA;
+    border-radius: 12px;
+}
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
 
 st.title("📚 AI Study Partner")
 
@@ -66,15 +251,13 @@ st.write(
 )
 
 
-with st.sidebar:
+st.subheader("Upload Study Materials")
 
-    st.header("Study Materials")
-
-    uploaded_files = st.file_uploader(
-        "Upload PDF files",
-        type=["pdf"],
-        accept_multiple_files=True
-    )
+uploaded_files = st.file_uploader(
+    "Upload one or more PDF files",
+    type=["pdf"],
+    accept_multiple_files=True
+)
 
 
 if not uploaded_files:
@@ -104,15 +287,22 @@ else:
             vector_index = get_vector_index(chunk_texts)
 
 
-        st.success(
-            f"Semantic index ready with "
-            f"{vector_index.ntotal} vectors."
-        )   
-
-        st.success(
-            f"Successfully extracted "
-            f"{len(extracted_pages)} page(s) from "
-            f"{len(uploaded_files)} document(s)."
+        st.markdown(
+            f"""
+            <div class="document-ready">
+                <div class="ready-icon">✅</div>
+                <div>
+                    <div class="ready-title">
+                        Study materials ready
+                    </div>
+                    <div class="ready-details">
+                        {len(uploaded_files)} document(s) indexed
+                        with {vector_index.ntotal} searchable sections.
+                    </div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
         )
 
         page_column, chunk_column = st.columns(2)
@@ -139,17 +329,50 @@ else:
             )
 
             st.write(first_page["text"][:2000])
+        if "active_tool" not in st.session_state:
 
-        ask_tab, summary_tab, quiz_tab, flashcard_tab = st.tabs(
-            [
-                "💬 Ask",
-                "📝 Summary",
-                "🧠 Quiz",
-                "🗂️ Flashcards"
-            ]
-        )
+            st.session_state.active_tool = "Ask"
 
-        with ask_tab:
+        navigation_columns = st.columns(4)
+
+        navigation_items = [
+            ("💬 Ask", "Ask"),
+            ("📝 Summary", "Summary"),
+            ("🧠 Quiz", "Quiz"),
+            ("🗂️ Flashcards", "Flashcards")
+        ]
+
+        for navigation_column, (
+            button_label,
+            tool_name
+        ) in zip(
+            navigation_columns,
+            navigation_items
+        ):
+
+            with navigation_column:
+
+                if st.button(
+                    button_label,
+                    key=f"nav_{tool_name}",
+                    use_container_width=True,
+                    type=(
+                        "primary"
+                        if st.session_state.active_tool
+                        == tool_name
+                        else "secondary"
+                    )
+                ):
+
+                    st.session_state.active_tool = (
+                        tool_name
+                    )
+
+                    st.rerun()
+
+    
+
+        if st.session_state.active_tool == "Ask":
 
             st.divider()
 
@@ -226,7 +449,7 @@ else:
                                 )
 
                                 st.write(result["text"])
-        with summary_tab:
+        if st.session_state.active_tool == "Summary":
             st.divider()
             st.subheader("Create a Topic Summary")
 
@@ -297,7 +520,7 @@ else:
                         f"Summary generation failed: {error}"
                                     )
 
-        with quiz_tab:
+        if st.session_state.active_tool == "Quiz":
             st.divider()
             st.subheader("Test Your knowledge")
             quiz_topic = st.text_input(
@@ -435,7 +658,7 @@ else:
                             st.write(
                                 quiz_item["explanation"]
                             )
-        with flashcard_tab:
+        if st.session_state.active_tool == "Flashcards":
 
             st.divider()
             st.subheader("Create Flashcards")
@@ -498,7 +721,7 @@ else:
                             f"**Answer:** "
                             f"{flashcard['back']}"
                         )
-            
+        
     else:
 
         st.error(
