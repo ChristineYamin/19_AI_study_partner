@@ -73,6 +73,7 @@ Large Language Model
      ↓
 Grounded Study Response
 
+
 🔍 RAG Pipeline
 1. PDF Processing
 
