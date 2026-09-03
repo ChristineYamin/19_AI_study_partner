@@ -109,6 +109,7 @@ st.markdown(
     [data-testid="stFileUploader"] small {
         color: #78716C;
     }
+    
 
     [data-testid="stMetricLabel"],
     [data-testid="stMetricValue"] {
