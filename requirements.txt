@@ -4,6 +4,6 @@ sentence-transformers
 faiss-cpu
 numpy
 huggingface-hub
-python-dontenv
+python-dotenv
 torch
 torchvision
